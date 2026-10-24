@@ -1,0 +1,13 @@
+# Install torch separately from the CPU or CUDA index (README).
+-c requirements.lock
+setuptools==77.0.3
+fastapi==0.116.1
+starlette==0.47.2
+pydantic==2.10.6
+httpx==0.28.1
+numpy==2.3.2
+uvicorn==0.35.0
+typer==0.16.0
+psutil==7.0.0
+filelock==3.18.0
+pytest==8.4.2

@@ -1,0 +1,190 @@
+{
+  "client": {
+    "hostname": "mathew",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "worker_address": "http://127.0.0.1:8377",
+  "worker": {
+    "device": "cpu",
+    "device_name": "CPU",
+    "torch_version": "2.7.1+cpu",
+    "cuda_version": null,
+    "executor_pid": 15868,
+    "model_cache": [
+      "mobilenet_v3_small.imagenet1k_v1.features576"
+    ],
+    "gpu_utilization_percent": null,
+    "host_memory_total_bytes": 8320221184,
+    "sampled_at": 1792865198.0781736,
+    "model_state": "loaded",
+    "loading_model": null,
+    "gpu_free_bytes": null,
+    "gpu_total_bytes": null,
+    "gpu_allocated_bytes": null,
+    "gpu_reserved_bytes": null
+  },
+  "size": 512,
+  "runs": [
+    {
+      "label": "initial_request",
+      "job_id": "j_9334035cd63c4a2eb1d35e58491d1e48",
+      "state": "succeeded",
+      "execution_device": "cpu",
+      "correct": true,
+      "max_absolute_error": 0.0,
+      "rtol": 0.0001,
+      "atol": 0.0001,
+      "client_end_to_end_s": 0.8016421000356786,
+      "local_reference_s": 0.0028802999877370894,
+      "uploaded_payload_bytes": 2097408,
+      "transfers": [
+        {
+          "direction": "upload",
+          "bytes": 1048704,
+          "duration_s": 0.051040299993474036,
+          "lookup_s": 0.009599099983461201,
+          "hash_s": 0.01335810002638027,
+          "cache_hit": false,
+          "sha256": "a228477796f2f30ea6062983adfd35998d8db2f72e10a15f920f86a906bb81f2"
+        },
+        {
+          "direction": "upload",
+          "bytes": 1048704,
+          "duration_s": 0.05089760001283139,
+          "lookup_s": 0.010387000045739114,
+          "hash_s": 0.011390800005756319,
+          "cache_hit": false,
+          "sha256": "9f8864aa038c02fa14a39e1b9015662bdc4ce8d7b582770c3972fb78bc5b23be"
+        },
+        {
+          "direction": "download",
+          "bytes": 1048704,
+          "duration_s": 0.06593969999812543
+        }
+      ],
+      "worker_timings": {
+        "queue_wait_s": 0.04888750001555309,
+        "model_load_s": null,
+        "input_load_s": 0.0029917999636381865,
+        "host_to_device_s": null,
+        "gpu_compute_s": null,
+        "compute_s": 0.0030644999933429062,
+        "device_to_host_s": null,
+        "serialization_s": 0.006459600001107901,
+        "gpu_peak_allocated_bytes": null,
+        "worker_total_s": 0.07644500001333654,
+        "result_hash_s": 0.00244009995367378,
+        "result_commit_s": 0.006187999970279634
+      },
+      "disconnected_and_reattached": true
+    },
+    {
+      "label": "reused_inputs",
+      "job_id": "j_62b4a32ce06a4b4d92b7a9a82cf3720c",
+      "state": "succeeded",
+      "execution_device": "cpu",
+      "correct": true,
+      "max_absolute_error": 0.0,
+      "rtol": 0.0001,
+      "atol": 0.0001,
+      "client_end_to_end_s": 0.9664073999738321,
+      "local_reference_s": 0.0021683000377379358,
+      "uploaded_payload_bytes": 0,
+      "transfers": [
+        {
+          "direction": "upload",
+          "bytes": 0,
+          "duration_s": 1.100008375942707e-06,
+          "lookup_s": 0.014623600000049919,
+          "hash_s": 0.01306640001712367,
+          "cache_hit": true,
+          "sha256": "a228477796f2f30ea6062983adfd35998d8db2f72e10a15f920f86a906bb81f2"
+        },
+        {
+          "direction": "upload",
+          "bytes": 0,
+          "duration_s": 1.800013706088066e-06,
+          "lookup_s": 0.010440999991260469,
+          "hash_s": 0.013355999952182174,
+          "cache_hit": true,
+          "sha256": "9f8864aa038c02fa14a39e1b9015662bdc4ce8d7b582770c3972fb78bc5b23be"
+        },
+        {
+          "direction": "download",
+          "bytes": 1048704,
+          "duration_s": 0.09275190002517775
+        }
+      ],
+      "worker_timings": {
+        "queue_wait_s": 0.030601500009652227,
+        "model_load_s": null,
+        "input_load_s": 0.022190399991814047,
+        "host_to_device_s": null,
+        "gpu_compute_s": null,
+        "compute_s": 0.01124519994482398,
+        "device_to_host_s": null,
+        "serialization_s": 0.005790299968793988,
+        "gpu_peak_allocated_bytes": null,
+        "worker_total_s": 0.14916999998968095,
+        "result_hash_s": 0.007753400015644729,
+        "result_commit_s": 0.01365450001321733
+      },
+      "disconnected_and_reattached": true
+    },
+    {
+      "label": "reused_inputs",
+      "job_id": "j_c868d007e44542a7b5db345423530db0",
+      "state": "succeeded",
+      "execution_device": "cpu",
+      "correct": true,
+      "max_absolute_error": 0.0,
+      "rtol": 0.0001,
+      "atol": 0.0001,
+      "client_end_to_end_s": 1.2871828000061214,
+      "local_reference_s": 0.004736199975013733,
+      "uploaded_payload_bytes": 0,
+      "transfers": [
+        {
+          "direction": "upload",
+          "bytes": 0,
+          "duration_s": 1.00000761449337e-06,
+          "lookup_s": 0.012550499988719821,
+          "hash_s": 0.012749499990604818,
+          "cache_hit": true,
+          "sha256": "a228477796f2f30ea6062983adfd35998d8db2f72e10a15f920f86a906bb81f2"
+        },
+        {
+          "direction": "upload",
+          "bytes": 0,
+          "duration_s": 1.00000761449337e-06,
+          "lookup_s": 0.023537700006272644,
+          "hash_s": 0.015997399983461946,
+          "cache_hit": true,
+          "sha256": "9f8864aa038c02fa14a39e1b9015662bdc4ce8d7b582770c3972fb78bc5b23be"
+        },
+        {
+          "direction": "download",
+          "bytes": 1048704,
+          "duration_s": 0.10218639997765422
+        }
+      ],
+      "worker_timings": {
+        "queue_wait_s": 0.050394399964716285,
+        "model_load_s": null,
+        "input_load_s": 0.004743600031360984,
+        "host_to_device_s": null,
+        "gpu_compute_s": null,
+        "compute_s": 0.002544499991927296,
+        "device_to_host_s": null,
+        "serialization_s": 0.005266299995128065,
+        "gpu_peak_allocated_bytes": null,
+        "worker_total_s": 0.07750439998926595,
+        "result_hash_s": 0.0030670000123791397,
+        "result_commit_s": 0.007584500010125339
+      },
+      "disconnected_and_reattached": true
+    }
+  ],
+  "verification_level": "HTTP worker; inspect execution_device",
+  "model_warm": "not applicable: matrix.multiply does not load a model"
+}

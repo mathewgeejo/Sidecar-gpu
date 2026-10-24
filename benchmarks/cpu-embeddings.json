@@ -1,0 +1,124 @@
+{
+  "workload": "image.embed",
+  "worker": {
+    "device": "cpu",
+    "device_name": "CPU",
+    "torch_version": "2.7.1+cpu",
+    "cuda_version": null,
+    "executor_pid": 15868,
+    "model_cache": [],
+    "gpu_utilization_percent": null,
+    "host_memory_total_bytes": 8320221184,
+    "sampled_at": 1792865192.741941,
+    "model_state": "not_loaded",
+    "loading_model": null,
+    "gpu_free_bytes": null,
+    "gpu_total_bytes": null,
+    "gpu_allocated_bytes": null,
+    "gpu_reserved_bytes": null
+  },
+  "runs": [
+    {
+      "job_id": "j_a6f0b9e76ae346d281b25d05bb439c46",
+      "execution_device": "cpu",
+      "result_shape": [
+        2,
+        576
+      ],
+      "timings": {
+        "queue_wait_s": 0.05509330000495538,
+        "model_load_s": 2.6140924000064842,
+        "model_cache_hit": false,
+        "input_load_s": 0.025546399992890656,
+        "host_to_device_s": null,
+        "gpu_compute_s": null,
+        "compute_s": 0.04539380001369864,
+        "device_to_host_s": null,
+        "serialization_s": 0.002115399984177202,
+        "gpu_peak_allocated_bytes": null,
+        "worker_total_s": 2.748338200035505,
+        "result_hash_s": 0.0019492999999783933,
+        "result_commit_s": 0.00528650003252551
+      },
+      "client_end_to_end_s": 3.3415502999559976,
+      "uploaded_payload_bytes": 1617,
+      "transfers": [
+        {
+          "direction": "upload",
+          "bytes": 809,
+          "duration_s": 0.11019809998106211,
+          "lookup_s": 0.011641099990811199,
+          "hash_s": 0.019110599998384714,
+          "cache_hit": false,
+          "sha256": "54ff7a81a4ec07cb357dfd25605c27cf6fdae9ae99f22644e6fc2c5decf24249"
+        },
+        {
+          "direction": "upload",
+          "bytes": 808,
+          "duration_s": 0.04212370002642274,
+          "lookup_s": 0.01180389994988218,
+          "hash_s": 0.010277800029143691,
+          "cache_hit": false,
+          "sha256": "16f6e067260048bf17e932b14ac93e3928ec928f43ddd47c0aa0e98213ff4b66"
+        },
+        {
+          "direction": "download",
+          "bytes": 4736,
+          "duration_s": 0.039409800025168806
+        }
+      ]
+    },
+    {
+      "job_id": "j_84a7b5b369474dccbf5663e15f043b41",
+      "execution_device": "cpu",
+      "result_shape": [
+        2,
+        576
+      ],
+      "timings": {
+        "queue_wait_s": 0.02712049998808652,
+        "model_load_s": 0.0,
+        "model_cache_hit": true,
+        "input_load_s": 0.009814599994570017,
+        "host_to_device_s": null,
+        "gpu_compute_s": null,
+        "compute_s": 0.03522369998972863,
+        "device_to_host_s": null,
+        "serialization_s": 0.0022771000512875617,
+        "gpu_peak_allocated_bytes": null,
+        "worker_total_s": 0.09118600003421307,
+        "result_hash_s": 0.0016373000107705593,
+        "result_commit_s": 0.005413100006990135
+      },
+      "client_end_to_end_s": 0.6977058000047691,
+      "uploaded_payload_bytes": 0,
+      "transfers": [
+        {
+          "direction": "upload",
+          "bytes": 0,
+          "duration_s": 1.400010660290718e-06,
+          "lookup_s": 0.0105430000112392,
+          "hash_s": 0.0008498999522998929,
+          "cache_hit": true,
+          "sha256": "54ff7a81a4ec07cb357dfd25605c27cf6fdae9ae99f22644e6fc2c5decf24249"
+        },
+        {
+          "direction": "upload",
+          "bytes": 0,
+          "duration_s": 1.700012944638729e-06,
+          "lookup_s": 0.012254700006451458,
+          "hash_s": 0.0013678999966941774,
+          "cache_hit": true,
+          "sha256": "16f6e067260048bf17e932b14ac93e3928ec928f43ddd47c0aa0e98213ff4b66"
+        },
+        {
+          "direction": "download",
+          "bytes": 4736,
+          "duration_s": 0.035394900012761354
+        }
+      ]
+    }
+  ],
+  "repeat_outputs_match": true,
+  "note": "The first run is cold only if this executor has not loaded the encoder yet."
+}

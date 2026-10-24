@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools==77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sidecar-gpu"
+version = "0.1.0"
+description = "Bounded, durable remote GPU jobs over a trusted LAN"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+  "httpx==0.28.1", "numpy==2.3.2", "typer==0.16.0",
+]
+
+[project.optional-dependencies]
+worker = ["fastapi==0.116.1", "starlette==0.47.2", "pydantic==2.10.6", "uvicorn==0.35.0", "psutil==7.0.0", "filelock==3.18.0"]
+test = ["pytest==8.4.2"]
+embeddings = ["torchvision==0.22.1", "pillow==11.3.0"]
+
+[project.scripts]
+sidecar = "sidecar_gpu.cli:app"
+
+[tool.setuptools.packages.find]
+include = ["sidecar_gpu*"]
+
+[tool.setuptools.package-data]
+sidecar_gpu = ["static/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["integration: separate-process HTTP tests", "cuda: requires a CUDA worker"]

@@ -1,0 +1,17 @@
+{
+  "device": "cuda",
+  "queue_limit": 8,
+  "upload_limit": 134217728,
+  "output_limit": 134217728,
+  "disk_budget": 4294967296,
+  "max_dimension": 8192,
+  "result_retention_seconds": 86400,
+  "transient_result_seconds": 600,
+  "input_grace_seconds": 300,
+  "gpu_memory_fraction": 0.75,
+  "host_memory_fraction": 0.5,
+  "enable_embeddings": false,
+  "max_images": 16,
+  "max_image_dimension": 4096,
+  "max_image_pixels": 16777216
+}

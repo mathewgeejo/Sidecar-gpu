@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Sidecar GPU · Worker console</title>
+  <link rel="stylesheet" href="/style.css">
+  <script type="module" src="/dashboard.js"></script>
+</head>
+<body>
+  <aside class="rail">
+    <a class="brand" href="/" aria-label="Sidecar GPU home"><span class="mark">S<span>↗</span></span><span>sidecar<span class="brand-sub">GPU RUNTIME</span></span></a>
+    <div class="rail-label">WORKER CONSOLE</div>
+    <a class="nav-link active" href="#overview"><span>◈</span> Overview</a>
+    <a class="nav-link" href="#jobs"><span>≡</span> Jobs</a>
+    <a class="nav-link" href="#storage"><span>▤</span> Object storage</a>
+    <div class="rail-note"><span class="tiny-dot"></span> LOCAL NETWORK<br><p>One worker.<br>Compute within reach.</p></div>
+    <div class="rail-footer">SIDECAR GPU <span>v0.1.0</span></div>
+  </aside>
+  <main id="overview">
+    <header><div class="breadcrumb">WORKSPACE <span>/</span> WORKER OVERVIEW</div><div class="connection"><i id="connection-dot"></i><span id="connection-label">Checking worker</span></div></header>
+    <section class="heading"><div><div class="eyebrow">COMPUTE, NEXT DOOR</div><h1>Worker overview<span>.</span></h1><p>Execution, transfers, and objects. Direct from your worker.</p></div><button id="refresh" class="button secondary" disabled>↻ Refresh</button></section>
+    <form id="pair-form" class="pair-panel"><div><h2>Pair with this worker</h2><p>Enter the token from the worker’s pairing file. It stays in this tab’s memory.</p></div><label for="token">Pairing token</label><div class="pair-controls"><input id="token" type="password" required autocomplete="off" placeholder="Paste pairing token" aria-describedby="pair-error"><button class="button primary" type="submit">Connect →</button></div><p id="pair-error" role="alert"></p></form>
+    <div id="console" hidden>
+      <section class="stats" aria-label="Worker measurements">
+        <article class="stat"><span class="stat-label">EXECUTION DEVICE</span><strong id="device-type">—</strong><small id="device-name">Unavailable</small></article>
+        <article class="stat"><span class="stat-label">WAITING JOBS</span><strong id="queue-depth">—</strong><small id="queue-limit">Bounded execution queue</small></article>
+        <article class="stat"><span class="stat-label">CACHED OBJECTS</span><strong id="object-count">—</strong><small id="storage-size">Unavailable</small></article>
+        <article class="stat"><span class="stat-label">INPUT CACHE HITS</span><strong id="cache-hits">—</strong><small>Verified hash lookups</small></article>
+      </section>
+      <section class="middle-grid">
+        <article class="panel device-panel"><div class="panel-top"><h2>Execution host</h2><span class="tag" id="executor-status">Unavailable</span></div><div class="device-icon">▧</div><h3 id="hardware-name">Unavailable</h3><p id="torch-version">Unavailable</p><dl class="resource-grid"><div><dt>GPU memory free / total</dt><dd id="gpu-memory">Unavailable</dd></div><div><dt>Host memory</dt><dd id="host-memory">Unavailable</dd></div><div><dt>CUDA runtime</dt><dd id="cuda-version">Unavailable</dd></div><div><dt>GPU utilization</dt><dd>Unavailable</dd></div></dl><p class="footnote" id="telemetry-time">No telemetry received.</p></article>
+        <article class="panel timing-panel"><div class="panel-top"><h2>Execution breakdown</h2><span class="muted" id="timing-job">Select a job</span></div><div id="timing-bars" class="timing-bars"><p class="empty">Timing measurements appear after execution.</p></div><div class="timing-footer"><span>Worker duration</span><strong id="worker-total">—</strong></div><p class="footnote">Client transfer and end-to-end measurements are in SDK benchmark reports. GPU telemetry is sampled between jobs.</p></article>
+      </section>
+      <section class="panel jobs-panel" id="jobs"><div class="panel-top"><div><h2>Recent jobs</h2><p class="muted">Accepted work survives client disconnects.</p></div><span id="job-count" class="tag">0 jobs</span></div><div class="table-scroll"><table><thead><tr><th>JOB / OPERATION</th><th>STATE</th><th>QUEUED</th><th>WORKER TIME</th><th>RESULT CACHE</th><th>ACTIONS</th></tr></thead><tbody id="job-rows"></tbody></table><p id="jobs-empty" class="empty">No submitted jobs yet. Run the Python demo to send a workload.</p></div><p id="action-message" role="status"></p></section>
+      <section class="bottom-grid"><article class="panel" id="storage"><div class="panel-top"><h2>Object storage</h2><span class="tag">ON DISK</span></div><div class="storage-meter"><span id="storage-bar"></span></div><p id="storage-budget">Unavailable</p><p id="storage-reservations" class="muted">Unavailable</p><p id="model-state" class="muted">Model state unavailable</p><p class="footnote">Immutable, content-addressed files. Active job inputs and retained results are protected from eviction.</p></article><article class="panel detail-panel"><div class="panel-top"><h2>Job details</h2><span id="detail-id" class="muted">Select a job</span></div><pre id="job-detail">Select a job ID to inspect parameters, timings, and errors.</pre></article></section>
+      <footer><span><span class="tiny-dot"></span> Live API data · polls every 2 seconds</span><span id="last-updated">Waiting for data</span><button id="disconnect" class="text-button">Disconnect</button></footer>
+    </div>
+  </main>
+</body>
+</html>
