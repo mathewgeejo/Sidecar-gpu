@@ -4,6 +4,8 @@ Execution environment inspected on 2026-10-24: Dell Inspiron 15 3511, Windows 11
 
 ## Automated acceptance criteria
 
+Final run: **36 passed**, one third-party Starlette/AnyIO deprecation warning, 275.18 seconds, with offline encoder reference tests enabled. Raw JUnit evidence is `.sidecar/test-results.xml`. No frontend build was required; one editable package installation prepared the runnable CLI.
+
 | Requested criterion | Verification | Evidence |
 | --- | --- | --- |
 | 1. Missing/invalid authentication | Verified | API tests reject missing/wrong bearer tokens for data/resource endpoints; browser wrong-token check |
@@ -43,7 +45,7 @@ The restart scenario deliberately seeds a persisted running state while the exec
 
 - `benchmarks/cpu-loopback-512.json`: three actual matrix runs; initial input payload 2,097,408 bytes, then zero for both repeats. Exact durations, worker identity and tolerances are recorded. No speedup interpretation is applied.
 - `benchmarks/cpu-embeddings.json`: two actual HTTP encoder runs; `[2,576]` outputs, approximately 2.61 s initial load, zero warm-load duration with an explicit model-cache hit; second image upload payload zero. Simple synthetic images exercise the runtime, not embedding relevance.
-- `.sidecar/browser/report.json`: Edge checks pass for authentication, real API state, result download correctness, disconnect, no page errors and mobile page overflow. Screenshots are in the same ignored runtime directory. Browser viewport checks do not imply broad cross-browser/accessibility certification.
+- `benchmarks/browser-smoke.json`: Edge checks pass for authentication, real API state, result download correctness, disconnect, no page errors and mobile page overflow. Screenshots are in `.sidecar/browser`. Browser viewport checks do not imply broad cross-browser/accessibility certification.
 - Test command: `python -m pytest -q`; offline encoder HTTP/reference tests additionally use `SIDECAR_TEST_WEIGHTS` pointing to the checkpoint downloaded by `prepare-model`. Standard environments without optional dependencies/weights skip the corresponding tests explicitly.
 
 Linux/WSL2, native Windows CUDA, firewall changes, remote TLS/tunnel setup, kernel cancellation, CUDA timings and device-memory admission are documented/implemented paths requiring the unavailable hardware or deployment environment. No firewall, driver, WSL, or system network settings were modified here.

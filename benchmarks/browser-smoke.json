@@ -1,0 +1,10 @@
+{
+  "browser": "msedge",
+  "real_api": true,
+  "invalid_token_rejected": true,
+  "authenticated_state_matches_api": true,
+  "result_download_verified": true,
+  "mobile_has_no_page_overflow": true,
+  "disconnect_verified": true,
+  "page_errors": []
+}

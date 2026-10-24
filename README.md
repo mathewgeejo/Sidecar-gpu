@@ -4,6 +4,8 @@ A small Python runtime that executes registered matrix and image workloads on a 
 
 **Verification so far:** native Windows, CPU execution, real HTTP, separate API/executor/client processes on one Dell host. Actual two-computer CUDA execution remains pending access to the Lenovo. See [the acceptance report](docs/acceptance.md). No GPU speedup is claimed.
 
+To create a clean source archive for the Lenovo, run `python scripts/package_source.py`. It writes `.sidecar/sidecar-gpu-source.zip`, excluding environments, runtime objects, tokens, and downloaded weights. Extract it on the other machine, then run the setup below from its `sidecar-gpu` folder.
+
 ## Quick start: one host, explicit CPU testing
 
 Use Python **3.11–3.13**, 64-bit. The tested interpreter is Python 3.13.2 on Windows 11. Run from the repository root. The client needs no PyTorch, NVIDIA driver, or GPU.
