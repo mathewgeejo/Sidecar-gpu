@@ -2,6 +2,8 @@
 
 A small Python runtime that executes registered matrix and image workloads on a second computer over HTTP. The worker owns one persistent execution process, keeps encoder models loaded, and stores reusable inputs and durable job identities on disk.
 
+Start with [how Sidecar works](docs/HOW_IT_WORKS.md) for plain-language and technical explanations of the protocol, PyTorch execution, CPU versus CUDA, caching, and recovery.
+
 **Verification so far:** native Windows, CPU execution, real HTTP, separate API/executor/client processes, and TCP network fault injection on one Dell host. The latest suite passed all 50 tests. Actual two-computer CUDA execution remains pending access to a second CUDA PC. See [the acceptance report](docs/acceptance.md). No GPU speedup is claimed.
 
 To create a clean source archive for the CUDA PC, run `python scripts/package_source.py`. It writes `.sidecar/sidecar-gpu-source.zip`, excluding environments, runtime objects, tokens, and downloaded weights. Extract it on the other machine, then run the setup below from its `sidecar-gpu` folder.

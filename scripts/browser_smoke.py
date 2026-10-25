@@ -36,6 +36,13 @@ def main():
         page.locator("#console").wait_for(state="visible")
         assert page.locator("#object-count").inner_text() == str(count)
         assert page.locator("#mode-label").inner_text() in ("CPU execution", "CUDA execution")
+        initial_job_count = page.locator("#total-jobs").inner_text()
+        page.get_by_role("button", name="Walkthrough", exact=True).click()
+        assert page.locator("#flow-panel").get_attribute("data-guide") == "client"
+        assert "no job submitted" in page.locator("#flow-context").inner_text()
+        assert page.locator("#total-jobs").inner_text() == initial_job_count
+        page.get_by_role("button", name="Live", exact=True).click()
+        assert page.locator("#flow-panel").get_attribute("data-guide") == ""
         browser_runs = []
         for _ in range(2):
             page.get_by_role("button", name="Run a workload", exact=True).click()
@@ -92,7 +99,7 @@ def main():
               "mobile_has_no_page_overflow": True, "disconnect_verified": True, "page_errors": errors,
               "browser_matrix_verified": True, "repeat_browser_payload_bytes": browser_runs[1],
               "job_search_verified": True, "reduced_motion_verified": True,
-              "http_lan_hash_fallback_verified": True}
+              "http_lan_hash_fallback_verified": True, "illustrative_walkthrough_verified": True}
     (args.output / "report.json").write_text(json.dumps(report, indent=2))
     print(json.dumps(report, indent=2))
 

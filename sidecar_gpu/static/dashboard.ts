@@ -1,7 +1,15 @@
 // Buildless module: browser-executable JavaScript in the existing TypeScript entrypoint.
 import {sha256, makeMatrices, validateMatrix} from '/workload.js';
 const el = id => document.getElementById(id);
-const text = (id, value) => { el(id).textContent = String(value); };
+const text = (id, value) => {
+  const element=el(id), next=String(value);
+  if(element.textContent===next) return;
+  element.textContent=next;
+  if(element.parentElement?.classList.contains('stat')) {
+    element.classList.remove('value-changed');
+    requestAnimationFrame(()=>element.classList.add('value-changed'));
+  }
+};
 const node = (tag, value = '', className = '') => { const n = document.createElement(tag); n.textContent = value; n.className = className; return n; };
 const icon = name => { const svg = document.createElementNS('http://www.w3.org/2000/svg','svg'); const use = document.createElementNS(svg.namespaceURI,'use'); use.setAttribute('href','#i-'+name); svg.setAttribute('aria-hidden','true'); svg.append(use); return svg; };
 const bytes = n => n == null ? 'Not available' : n >= 1073741824 ? (n/1073741824).toFixed(2)+' GiB' : n >= 1048576 ? (n/1048576).toFixed(1)+' MiB' : n >= 1024 ? (n/1024).toFixed(1)+' KiB' : n+' B';
@@ -9,7 +17,8 @@ const duration = n => n == null ? '—' : n < 1 ? (n*1000).toFixed(2)+' ms' : n.
 let token = '', selected = null, jobs = [], loading = false, ready = false, busy = false;
 let epoch = 0, session = new AbortController(), requests = 0, phase = 'idle';
 let rowsSignature = '', detailSignature = '', toastTimer, receipt = null;
-const observed = new Map(), events = [];
+const observed = new Map(), events = [], responseSamples=[];
+let guidedStep=-1, guideTimer=null;
 try { receipt = JSON.parse(sessionStorage.getItem('sidecar-submission') || 'null'); } catch {}
 if (receipt?.origin !== location.origin) receipt = null;
 
@@ -30,6 +39,7 @@ function toast(message) {
   clearTimeout(toastTimer); toastTimer=setTimeout(() => { el('toast').hidden=true; },4500);
 }
 function updateFlow() {
+  if(guidedStep>=0) return;
   const active = jobs.find(job => ['running','cancel_requested'].includes(job.state));
   const mode = ['upload','download'].includes(phase) ? phase : phase === 'execute' && active ? 'running' : requests ? 'request' : active ? 'running' : 'idle';
   el('flow-panel').dataset.flow = mode;
@@ -147,14 +157,14 @@ async function refresh() {
     connection(ready?'Worker connected':'Executor unavailable',ready);
     text('mode-label',cuda?'CUDA execution':'CPU execution');
     text('mode-description',cuda?'Jobs execute on this worker’s NVIDIA CUDA device.':'This worker computes on its CPU. CUDA offloading is not active.');
-    text('rail-mode',cuda?'CUDA worker connected':'CPU worker connected');
+    text('rail-mode',cuda?'CUDA worker connected':'CPU worker connected'); text('rail-session-address',location.host);
     text('device-type',cuda?'NVIDIA CUDA':'CPU RUNTIME'); text('hardware-name',cuda?device.device_name:'CPU executor');
     text('device-name',cuda?device.device_name:'Persistent PyTorch execution process');
     text('execution-mode',cuda?'CUDA':'CPU'); text('flow-worker-name',cuda?'CUDA worker':'CPU worker');
     text('flow-worker-description','Persistent execution process'); text('flow-device',cuda?'NVIDIA · CUDA':'CPU · PyTorch');
     text('worker-address',location.host);
     text('transport-description',['localhost','127.0.0.1','[::1]'].includes(location.hostname)?'Loopback address':'Network worker address');
-    text('api-latency',responseMs.toFixed(0)+' ms response');
+    text('api-latency',responseMs.toFixed(0)+' ms response'); recordResponse(responseMs);
     text('dialog-device',cuda?device.device_name:'CPU · no CUDA execution');
     text('total-jobs',Object.values(stateCounts).reduce((sum,n)=>sum+n,0));
     text('completed-count',(stateCounts.succeeded||0)+' completed successfully');
@@ -263,13 +273,13 @@ el('pair-form').addEventListener('submit',async eventObject=>{
 });
 el('refresh').addEventListener('click',()=>refresh().catch(()=>{}));
 el('disconnect').addEventListener('click',()=>{
-  epoch++; session.abort(); session=new AbortController(); token=''; loading=false; ready=false; jobs=[]; phase='idle';
+  stopGuide(); epoch++; session.abort(); session=new AbortController(); token=''; loading=false; ready=false; jobs=[]; phase='idle';
   el('console').hidden=true; el('pair-form').hidden=false; el('refresh').disabled=true; el('run-workload').disabled=true;
-  text('pair-error',''); connection('Disconnected',false); text('rail-mode','Awaiting connection'); updateFlow();
+  text('pair-error',''); connection('Disconnected',false); text('rail-mode','Awaiting connection'); text('rail-session-address','Not connected'); updateFlow();
 });
 el('job-search').addEventListener('input',()=>renderJobs(true));
 el('job-filter').addEventListener('change',()=>renderJobs(true));
-el('run-workload').addEventListener('click',()=>el('run-dialog').showModal());
+el('run-workload').addEventListener('click',()=>{ stopGuide(); el('run-dialog').showModal(); });
 el('close-run-dialog').addEventListener('click',()=>el('run-dialog').close());
 el('run-form').addEventListener('submit',eventObject=>{eventObject.preventDefault();if(!busy)runWorkload(Number(el('matrix-size').value));});
 el('recover-submission').addEventListener('click',async()=>{
@@ -282,5 +292,68 @@ el('recover-submission').addEventListener('click',async()=>{
 document.querySelectorAll('.nav-link').forEach(link=>link.addEventListener('click',()=>{
   document.querySelectorAll('.nav-link').forEach(item=>item.classList.toggle('active',item===link));
 }));
+
+function recordResponse(milliseconds) {
+  responseSamples.push(milliseconds);
+  if(responseSamples.length>24) responseSamples.shift();
+  text('trace-value',Math.round(milliseconds)+' ms');
+  if(responseSamples.length<2) return;
+  const min=Math.min(...responseSamples), max=Math.max(...responseSamples,min+5);
+  el('api-trace').setAttribute('d',responseSamples.map((value,index)=>{
+    const x=2+index/(responseSamples.length-1)*86, y=19-(value-min)/(max-min)*16;
+    return (index?'L':'M')+x.toFixed(1)+' '+y.toFixed(1);
+  }).join(' '));
+}
+const guideSteps=[
+  {node:'client',flow:'upload',caption:'01 / The client prepares float32 inputs and checks their hashes.'},
+  {node:'transport',flow:'upload',caption:'02 / Authenticated HTTP carries inputs and a job request to the worker.'},
+  {node:'worker',flow:'running',caption:'03 / The persistent PyTorch process executes on its configured CPU or CUDA device.'},
+  {node:'result',flow:'download',caption:'04 / The client retrieves the result and verifies its hash and values.'},
+];
+function stopGuide() {
+  clearTimeout(guideTimer); guidedStep=-1;
+  el('flow-panel').dataset.guide='';
+  el('flow-live').classList.add('active'); el('flow-live').setAttribute('aria-pressed','true');
+  el('flow-tour').classList.remove('active'); el('flow-tour').setAttribute('aria-pressed','false');
+  text('flow-mode-label','LIVE TELEMETRY'); text('flow-context','Observed requests & job states');
+  updateFlow();
+}
+function showGuideStep() {
+  const step=guideSteps[guidedStep];
+  el('flow-panel').dataset.guide=step.node;
+  el('flow-panel').dataset.flow=step.flow;
+  text('flow-mode-label','WALKTHROUGH / '+(guidedStep+1)+' OF 4');
+  text('flow-caption',step.caption);
+  text('flow-context','Illustration only · no job submitted');
+  guideTimer=setTimeout(()=>{
+    guidedStep++;
+    if(guidedStep>=guideSteps.length) stopGuide(); else showGuideStep();
+  },2600);
+}
+el('flow-live').addEventListener('click',stopGuide);
+el('flow-tour').addEventListener('click',()=>{
+  clearTimeout(guideTimer); guidedStep=0;
+  el('flow-live').classList.remove('active'); el('flow-live').setAttribute('aria-pressed','false');
+  el('flow-tour').classList.add('active'); el('flow-tour').setAttribute('aria-pressed','true');
+  showGuideStep();
+});
+let tiltFrame=0;
+const diagram=el('flow-panel');
+diagram.addEventListener('pointermove',event=>{
+  if(event.pointerType==='touch'||matchMedia('(prefers-reduced-motion: reduce)').matches||tiltFrame) return;
+  tiltFrame=requestAnimationFrame(()=>{
+    const box=diagram.getBoundingClientRect();
+    const x=(event.clientX-box.left)/box.width-.5, y=(event.clientY-box.top)/box.height-.5;
+    diagram.style.setProperty('--tilt-x',(-y*6).toFixed(2)+'deg');
+    diagram.style.setProperty('--tilt-y',(x*8).toFixed(2)+'deg');
+    tiltFrame=0;
+  });
+});
+diagram.addEventListener('pointerleave',()=>{
+  cancelAnimationFrame(tiltFrame); tiltFrame=0;
+  diagram.style.setProperty('--tilt-x','0deg'); diagram.style.setProperty('--tilt-y','0deg');
+});
+document.addEventListener('visibilitychange',()=>{ if(document.hidden)stopGuide(); });
+
 setInterval(()=>{if(!document.hidden)refresh().catch(()=>{});},2000);
 fetch('/api/v1/health',{cache:'no-store'}).then(response=>response.json()).then(health=>connection(health.status==='ready'?'Worker ready · pairing required':'Worker unavailable',false)).catch(()=>connection('Worker unreachable',false));
