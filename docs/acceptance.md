@@ -4,7 +4,7 @@ Execution environment inspected on 2026-10-24: Dell Inspiron 15 3511, Windows 11
 
 ## Automated acceptance criteria
 
-Final run: **36 passed**, one third-party Starlette/AnyIO deprecation warning, 275.18 seconds, with offline encoder reference tests enabled. Raw JUnit evidence is `.sidecar/test-results.xml`. No frontend build was required; one editable package installation prepared the runnable CLI.
+Latest run on 2026-10-25: **50 passed, no skips**, one third-party Starlette/AnyIO deprecation warning, 224.69 seconds, with offline encoder reference tests and all 14 network fault scenarios, including Edge, enabled. Raw JUnit evidence is `.sidecar/test-results-network-20261025.xml`; network evidence is `.sidecar/network-lab/regression-20261025/evidence.json`. No frontend build was required. The earlier 36-test acceptance run is preserved in `.sidecar/test-results.xml`.
 
 | Requested criterion | Verification | Evidence |
 | --- | --- | --- |
@@ -25,9 +25,25 @@ The restart scenario deliberately seeds a persisted running state while the exec
 ## Four distinct verification levels
 
 1. **Unit and in-process API integration:** authentication, validation, storage, state transitions, limits, failure semantics, SDK error paths and optional image validation.
-2. **Separate processes on one host:** real Uvicorn HTTP worker, spawned persistent PyTorch CPU executor, SDK/CLI client; reconnect, cache reuse, correctness, full worker restart and executor replacement. Edge headless browser tests use the real same-host API and data.
-3. **Two physical computers:** **not verified**. The user deferred Lenovo setup; no reachable authenticated second worker was supplied.
+2. **Separate processes on one host:** real Uvicorn HTTP worker, spawned persistent PyTorch CPU executor, SDK/CLI client; reconnect, cache reuse, correctness, full worker restart and executor replacement. The network lab additionally inserts a real Toxiproxy process, shapes data in both directions, and breaks actual connections. Edge headless browser tests use the real API through that shaped link.
+3. **Two physical computers:** **not verified**. No authenticated second worker has been verified. The current proposed Windows 11 test worker has an RTX 5060 with 8 GB VRAM and 16 GB RAM; these are user-supplied specifications, not inspected hardware.
 4. **Actual remote CUDA:** **not verified**. No CUDA device or CUDA PyTorch build is available here. No CUDA benchmark or speedup result is reported.
+
+## Single-host network fault evidence
+
+The [network lab](network-lab.md) passed 14 scenarios against real TCP sockets and the actual SDK/API/CPU executor, using pinned Toxiproxy 2.13.0. Client input/output/receipts and worker storage are in separate directories; submitting and reconnecting clients are different processes and do not import PyTorch.
+
+- A five-request calibration measured **2.32 ms median** without added delay and **105.18 ms median** with a fixed 50 ms delay injected in each direction.
+- Clean, synthetic Wi-Fi-like, slow and fragmented stream profiles returned numerically correct matrix results. Every second run uploaded zero input payload bytes.
+- At the configured slow-link upload cap of **256 decimal KB/s**, the two 1,048,704-byte NPY input uploads took approximately **4.298 s** and **4.315 s**, respectively. These are local measured transfer durations under injected conditions, not measurements of a real Wi-Fi network.
+- An accepted queued job completed while the client link was disabled. A new client process later retrieved it; an earlier SDK wait timeout did not cancel it.
+- A blackholed submission response produced a real `SubmissionUncertain` receipt. Recovery and an identical submission found exactly one job identity.
+- Connections closed after 8 KiB of upload/download traffic. Upload reservations and temporary files were cleaned up; a partial download preserved an existing destination and removed its temporary file. Full retries succeeded and verified their hashes.
+- A read blackhole produced the configured client timeout. Two concurrent client processes using one key received one identity.
+- Killing the entire lab worker tree and restarting against the same storage recovered a genuinely queued accepted job and retained earlier completed results. The test briefly suspended its own idle executor to arrange that queued state; no in-flight GPU interruption is claimed.
+- Installed Edge passed authentication, job inspection, real result download, mobile overflow and disconnect checks through the Wi-Fi-like profile.
+
+The proxy is bound to loopback and requires no firewall or system-network changes. This does not reproduce physical radio/packet behavior, separate operating systems or hardware, TCP handshake timing, shared-link congestion, driver compatibility, CUDA or GPU speedup. See the lab's documented limits before interpreting these results as deployment evidence.
 
 ## Physical demo requirements
 

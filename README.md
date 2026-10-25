@@ -2,9 +2,9 @@
 
 A small Python runtime that executes registered matrix and image workloads on a second computer over HTTP. The worker owns one persistent execution process, keeps encoder models loaded, and stores reusable inputs and durable job identities on disk.
 
-**Verification so far:** native Windows, CPU execution, real HTTP, separate API/executor/client processes on one Dell host. Actual two-computer CUDA execution remains pending access to the Lenovo. See [the acceptance report](docs/acceptance.md). No GPU speedup is claimed.
+**Verification so far:** native Windows, CPU execution, real HTTP, separate API/executor/client processes, and TCP network fault injection on one Dell host. The latest suite passed all 50 tests. Actual two-computer CUDA execution remains pending access to a second CUDA PC. See [the acceptance report](docs/acceptance.md). No GPU speedup is claimed.
 
-To create a clean source archive for the Lenovo, run `python scripts/package_source.py`. It writes `.sidecar/sidecar-gpu-source.zip`, excluding environments, runtime objects, tokens, and downloaded weights. Extract it on the other machine, then run the setup below from its `sidecar-gpu` folder.
+To create a clean source archive for the CUDA PC, run `python scripts/package_source.py`. It writes `.sidecar/sidecar-gpu-source.zip`, excluding environments, runtime objects, tokens, and downloaded weights. Extract it on the other machine, then run the setup below from its `sidecar-gpu` folder.
 
 ## Quick start: one host, explicit CPU testing
 
@@ -29,15 +29,25 @@ Open **http://127.0.0.1:8377/** and paste the token from the file printed at sta
 
 The demo uploads two matrices, submits a job, closes the client, reconnects by ID, downloads the result, validates a NumPy CPU reference, then repeats using cached inputs. JSON includes bytes actually sent, transfer durations, execution timings, correctness, and reconnect evidence. A repeated run may find its inputs cached already; inspect the hit flags rather than assuming a cold cache.
 
+## Simulate network faults on this Windows PC
+
+Run independent client, worker/executor, and Toxiproxy processes over real TCP with synthetic latency, jitter, bandwidth limits, interrupted transfers, lost acceptance responses, outages, and worker restarts:
+
+```powershell
+.\.venv\Scripts\python.exe scripts/network_lab.py --download --browser
+```
+
+This downloads a pinned, checksum-verified Windows x64 Toxiproxy executable into `.sidecar/tools`. Later runs can omit `--download`. Omit `--browser` if Playwright/Edge are unavailable. Artifacts go to a fresh directory under `.sidecar/network-lab`; the script stops its own processes afterward. It makes no firewall or system-network changes. See [the network lab](docs/network-lab.md) for scenarios, evidence, and limits. Shared-host CPU tests cannot reproduce physical networking or validate CUDA.
+
 ## Two physical computers: Windows CUDA worker
 
-On **computer B (Lenovo/NVIDIA worker)**, install a compatible NVIDIA driver, copy this repository, then:
+On **computer B (Windows/NVIDIA worker)**, install a compatible NVIDIA driver, copy this repository, then:
 
 ```powershell
 nvidia-smi
 py -3.13 -m venv .venv
 .\.venv\Scripts\python -m pip install -r requirements.txt
-.\.venv\Scripts\python -m pip install torch==2.7.1 --index-url https://download.pytorch.org/whl/cu126
+.\.venv\Scripts\python -m pip install torch==2.7.1 --index-url https://download.pytorch.org/whl/cu128
 .\.venv\Scripts\python -m pip install --no-build-isolation -e .
 .\.venv\Scripts\python -m sidecar_gpu doctor
 Get-NetIPAddress -AddressFamily IPv4
@@ -45,6 +55,8 @@ Get-NetIPAddress -AddressFamily IPv4
 ```
 
 `doctor` must report `cuda_available: true` and identify the actual GPU. The worker defaults to CUDA and exits on CUDA initialization failure; it never silently switches to CPU. The CUDA wheel includes its runtime dependencies; building CUDA kernels or installing a standalone CUDA toolkit is unnecessary for these workloads. An adequate NVIDIA driver is still required. See the [official PyTorch 2.7.1 CPU/CUDA installation commands](https://pytorch.org/get-started/previous-versions/#v271).
+
+For the RTX 5060 and other RTX 50-series (Blackwell) GPUs, use the `cu128` wheel shown above. See [PyTorch's Blackwell support announcement](https://pytorch.org/blog/pytorch-2-7/) and [NVIDIA's compute capability table](https://developer.nvidia.com/cuda/gpus). Actual execution on the test PC still needs verification.
 
 Use a trusted network profile. If Windows Firewall blocks the selected port, an administrator can add a scoped rule, replacing the example address with **computer A's actual IPv4**:
 
@@ -73,7 +85,7 @@ Native Linux or WSL2 can use the same worker. On Ubuntu, install Python/venv and
 ```bash
 python3 -m venv .venv
 .venv/bin/python -m pip install -r requirements.txt
-.venv/bin/python -m pip install torch==2.7.1 --index-url https://download.pytorch.org/whl/cu126
+.venv/bin/python -m pip install torch==2.7.1 --index-url https://download.pytorch.org/whl/cu128
 .venv/bin/python -m pip install --no-build-isolation -e .
 nvidia-smi
 .venv/bin/python -m sidecar_gpu doctor
@@ -119,8 +131,8 @@ The fixed encoder is torchvision MobileNet V3 Small, ImageNet1K V1 weights, with
 Install matching torchvision for the worker's CPU or CUDA index, then download weights **before** the offline demonstration:
 
 ```powershell
-# CUDA worker; replace cu126 with cpu for the CPU test environment.
-.\.venv\Scripts\python -m pip install torchvision==0.22.1 pillow==11.3.0 --index-url https://download.pytorch.org/whl/cu126
+# CUDA worker; replace cu128 with cpu for the CPU test environment.
+.\.venv\Scripts\python -m pip install torchvision==0.22.1 pillow==11.3.0 --index-url https://download.pytorch.org/whl/cu128
 .\.venv\Scripts\python -m sidecar_gpu prepare-model
 .\.venv\Scripts\python -m sidecar_gpu worker --device cuda --lan --enable-embeddings
 ```
@@ -183,7 +195,7 @@ python -m pip install playwright==1.55.0
 python scripts/browser_smoke.py http://127.0.0.1:8377 --token-file PATH --channel msedge
 ```
 
-The dashboard is buildless: `dashboard.ts` intentionally uses browser-executable TypeScript syntax and is served as JavaScript. There is no frontend build or external CDN dependency.
+The dashboard is buildless: `dashboard.ts` intentionally uses browser-executable TypeScript syntax and is served as JavaScript. There is no frontend build or external CDN dependency. The workspace shows the reported CPU/CUDA mode, animated request activity, job search/filtering, measured timings, and object storage. **Run a workload** submits a real matrix job from the browser and checks the downloaded hash and every output value; deterministic inputs demonstrate cached reuse. The browser keeps its token in memory and saves only submission metadata in session storage for recovery. HTTP LAN origins use a tested SHA-256 fallback when Web Crypto is unavailable.
 
 ## Measurements and limitations
 
